@@ -7,13 +7,14 @@ import math
 csv_file_path = 'MSFT.csv'
 data = []
 
+# fill data array
 with open(csv_file_path, 'r') as file:
     csv_reader = csv.reader(file)
     headers = next(csv_reader) 
     for row in csv_reader:
         data.append(row)
 
-    
+# get dates and close prices from data
 dates = [datetime.strptime(row[0], '%Y-%m-%d') for row in data]
 close_prices = [float(row[4]) for row in data]
 
