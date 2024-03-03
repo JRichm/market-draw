@@ -14,9 +14,11 @@ with open(csv_file_path, 'r') as file:
     for row in csv_reader:
         data.append(row)
 
+
 # get dates and close prices from data
 dates = [datetime.strptime(row[0], '%Y-%m-%d') for row in data]
 close_prices = [float(row[4]) for row in data]
+
 
 # function to calculate euclidean distance between two points
 def euclidean_distance(point1, point2):
@@ -32,6 +34,7 @@ def knn_prediction(data, query_point, k):
     prediction = max(set(labels), key=labels.count) # choose the label with the majority vote
     return prediction
 
+
 # preprocess data into features and labels
 features_labels = [
     ([float(row[1]), float(row[2]), float(row[3]), float(row[4]), float(row[5]), int(row[6])], # features
@@ -39,9 +42,11 @@ features_labels = [
     for i, row in enumerate(data[:-1])
 ]
 
+
 # perform k-NN predictions for all data points
 k = 3 # number of neighbors to consider
 predictions = [knn_prediction(features_labels, features, k) for features, _ in features_labels]
+
 
 # plot closing prices
 plt.figure(figsize=(10, 6))
