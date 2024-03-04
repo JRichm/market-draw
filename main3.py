@@ -69,51 +69,73 @@ clock = pygame.time.Clock()
 
 # main loop
 running = True
-zoom_factor = 1.0  # Initial zoom factor
+zoom_factor = width / len(dates) - .5   # Initial zoom factor
+print(zoom_factor)
+pan_offset = [75, 600] # Initial pan offset
+
+# surface for chart
+chart_surface = pygame.Surface((width, height))
+
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
-                # Move left
-                zoom_factor *= 1.1
-                print("pan left")
-            elif event.key == pygame.K_RIGHT:
-                # Move right
-                zoom_factor /= 1.1
-                print("pan right")
-            elif event.key == pygame.K_DOWN:
-                # Zoom out
-                zoom_factor /= 1.1
-                print("zoom out")
-            elif event.key == pygame.K_UP:
-                # Zoom in
-                zoom_factor *= 1.1
-                print("zoom in")
+        
+        # handle keyboard input
 
-    # Clear the screen
-    screen.fill(white)
+        # Get the state of all keys
+        keys = pygame.key.get_pressed()
 
-    # Calculate the visible range based on zoom factor
-    visible_range = int(len(dates) / zoom_factor)
+        # handle keyboard input
+        if keys[pygame.K_KP4]:
+            pan_offset[0] += 10
+            print("pan left")
 
-    # plot closing prices
-    for i in range(1, min(len(dates), visible_range + 1)):
-        x = int((i - 1) * zoom_factor)
-        price = int(height - close_prices[i - 1] * zoom_factor)
-        pygame.draw.line(screen, blue, (x, price), (x + 1, height - close_prices[i] * zoom_factor))
+        if keys[pygame.K_KP6]:
+            pan_offset[0] -= 10
+            print("pan right")
+
+        if keys[pygame.K_KP8]:
+            pan_offset[1] += 10
+            print("pan up")
+
+        if keys[pygame.K_KP5]:
+            pan_offset[1] -= 10
+            print("pan down")
+
+        if keys[pygame.K_KP7]:
+            zoom_factor *= 1.1
+            print("zoom in")
+
+        if keys[pygame.K_KP9]:
+            zoom_factor /= 1.1
+            print("zoom out")    
+
+    # Clear the chart surface
+    chart_surface.fill(white)
+
+    # plot closing prices on chart surface
+    for i in range(1, len(dates)):
+        x = int((i - 1) * zoom_factor + pan_offset[0])
+        price = int(height - close_prices[i - 1] * zoom_factor + pan_offset[1])
+        pygame.draw.line(chart_surface, blue, (x, price), (x + 1, height - close_prices[i] * zoom_factor + pan_offset[1]), 3)
 
         # Highlight buy (green) and sell (red) indicators
         if predictions[i - 1] == 1:
-            alpha_surface = pygame.Surface((1, height), pygame.SRCALPHA)
+            alpha_surface = pygame.Surface((4, 20), pygame.SRCALPHA)
             alpha_surface.fill((0, 255, 0, 75))
-            screen.blit(alpha_surface, (x, 0))
+            chart_surface.blit(alpha_surface, (x - 2, price - 20))
         elif predictions[i - 1] == -1:
-            alpha_surface = pygame.Surface((1, height), pygame.SRCALPHA)
+            alpha_surface = pygame.Surface((4, 20), pygame.SRCALPHA)
             alpha_surface.fill((255, 0, 0, 75))
-            screen.blit(alpha_surface, (x, 0))
+            chart_surface.blit(alpha_surface, (x - 2, price))
+
+    # Clear the main screen
+    screen.fill(white)
+
+    # blit chart surface to the main screen
+    screen.blit(chart_surface, (0, 0))
 
     pygame.display.flip()
     clock.tick(60)
